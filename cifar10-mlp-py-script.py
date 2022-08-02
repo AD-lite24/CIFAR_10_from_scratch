@@ -5,6 +5,8 @@ from sklearn.metrics import accuracy_score
 from tqdm import tqdm
 from tensorflow import keras
 import tensorflow as tf
+from sklearn.preprocessing import OneHotEncoder
+from keras.utils import np_utils
 from keras.datasets import cifar10  #to import dataset
 
 # %%
@@ -45,12 +47,6 @@ x_test = x_test.astype('float32')
 x_test = x_test/255
 
 # %%
-import numpy as np
-from sklearn.preprocessing import OneHotEncoder
-from keras.utils import np_utils
-
-
-# %%
 y_train = np_utils.to_categorical(y_train) 
 y_test = np_utils.to_categorical(y_test) 
 num_classes = y_test.shape[1]
@@ -60,7 +56,7 @@ num_classes = y_test.shape[1]
 class CifarClass():
 
   def __init__(self, learning_rate = 0.01):
-    #self.i = 0
+    
     self.training_images = None
     self.training_labels = None 
     self.testing_images = None
@@ -83,23 +79,16 @@ class CifarClass():
     return z>0
 
   def __softmax_score(self, x):
-    #print('output:', x)
     exponent = np.exp(x - np.max(x))
-    #print('exponent1:', exponent)
-    # print('softmax score',exponent/exponent.sum(axis=0))
-    #print('exponent2:', exponent)
     return exponent/exponent.sum()
 
   def __forward_pass(self, X):
     
-    self.__output1 = X.dot(self.__weights_1) + self.__bias_1      #shape: (1, 1024)
-    #print('first_output', self.__output1)      
+    self.__output1 = X.dot(self.__weights_1) + self.__bias_1      #shape: (1, 1024) 
     self.__output1_relu = self.__ReLU(self.__output1)               #shape: (1, 1024)
-    #print('relu output', self.__output1_relu)
     self.__output2 = self.__output1_relu.dot(self.__weights_2) + self.__bias_2  #shape: (10, 1)
-    #print('second_output', self.__output2)
     self.__output2_softmax = self.__softmax_score(self.__output2)               #shape: (10, 1)
-    #print('softmax output', self.__output2_softmax)
+    
 
   def __backward_propogation(self, cross_entropy_gradient_2, difference_total_2, difference_total_1, cross_entropy_gradient_1):
 
@@ -146,13 +135,9 @@ class CifarClass():
         for k in range(16):                       #loading images for forward pass
           
           self.__forward_pass(self.__x_batch[k])   #k is image index(sanity check)
-          cross_entropy_sum_2 += ((self.__output2_softmax - self.__y_batch[k]).T).dot(self.__output1_relu)  #shape: (10,1024)
-          #print('shape of label is:', self.__y_batch[k].shape)     
+          cross_entropy_sum_2 += ((self.__output2_softmax - self.__y_batch[k]).T).dot(self.__output1_relu)  #shape: (10,1024)   
           difference_total_2 += self.__output2_softmax - self.__y_batch[k]  #(1,10)
-          #print('shape of X is:', self.__x_batch[k].shape)
           temp = self.__x_batch[k].reshape(3072,1)
-          #print('shape of reshaped X is:', temp.shape)
-          #print('shape of __ is:', (self.__weights_2.dot((self.__output2_softmax - self.__y_batch[k]).T)).shape)
           cross_entropy_sum_1 += (temp).dot((self.__weights_2.dot((self.__output2_softmax - self.__y_batch[k]).T).T)*self.__ReLU_derivative(self.__output1)) #(3072, 1024)
           difference_total_1 += self.__weights_2.dot((self.__output2_softmax - self.__y_batch[k]).T)            #(1024,1)
 
@@ -164,11 +149,6 @@ class CifarClass():
 
       predict = self.predict(cc.testing_images)
       print('accuracy for epoch idx', i, 'is:', accuracy_score(cc.testing_labels, predict))
-        #print('shapes after backward propogation:', 'w1:', self.__weights_1.shape, 'b1:', self.__bias_1.shape, 'w2:', self.__weights_2.shape, 'b2:', self.__bias_2.shape)
-        #print('weights and biases after batch:', 'w1', self.__weights_1, 'b1', self.__bias_1)
-
-      # print('final w2:', self.__weights_2)
-      # print('final b2:', self.__bias_2)
 
   def predict(self, X):
     y= np.zeros((len(X), self.__class_count))
