@@ -7,6 +7,7 @@ from tensorflow import keras
 import tensorflow as tf
 from sklearn.preprocessing import OneHotEncoder
 from keras.utils import np_utils
+from sklearn.utils import shuffle
 from keras.datasets import cifar10  #to import dataset
 
 # %%
@@ -121,6 +122,7 @@ class CifarClass():
     self.__num_epochs = 25
 
     for i in range(self.__num_epochs):
+      X, y = shuffle(X, y)
       print('epoch idx:', i)
       for j in range(3125):
         
