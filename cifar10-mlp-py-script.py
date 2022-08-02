@@ -122,7 +122,7 @@ class CifarClass():
     self.__num_epochs = 25
 
     for i in range(self.__num_epochs):
-      X, y = shuffle(X, y)
+      X, y = shuffle(X, y)                      #shuffling images after every epoch
       print('epoch idx:', i)
       for j in range(3125):
         
